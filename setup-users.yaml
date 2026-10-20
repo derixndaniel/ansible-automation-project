@@ -1,0 +1,22 @@
+- name: play1
+  hosts: web_servers
+  become: true
+  tasks:
+  - name : Create user
+    ansible.builtin.user:
+     name: ansible
+     state: present
+     create_home: true
+  - name : Provide ssh key
+    ansible.posix.authorized_key:
+     user: ansible
+     state: present
+     key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+  - name : Configure sudo permissions
+    ansible.builtin.copy:
+     dest: /etc/sudoers.d/ansible
+     content: "ansible ALL=(ALL) NOPASSWD: ALL\n"
+     owner: root
+     group: root
+     mode: '0440'
+     validate: 'visudo -cf %s'
